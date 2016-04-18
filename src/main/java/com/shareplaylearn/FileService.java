@@ -9,6 +9,9 @@ public class FileService
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        get( "/api/status", (req,res) -> {
+            res.status(200);
+            return "OK";
+        });
     }
 }
