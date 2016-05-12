@@ -14,6 +14,20 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>nexusRepo</id>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <name>Shareplaylearn Nexus Repository</name>
+      <url>https://www.shareplaylearn.net/repo/repository/maven-snapshots/</url>
+    </repository>
+  </repositories>
+
   <build>
     <plugins>
       <plugin>
@@ -29,6 +43,11 @@
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>com.shareplaylearn</groupId>
+      <artifactId>user-item-manager</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -21,7 +21,7 @@ public class FormResource {
         return IOUtils.toString( part.getInputStream() );
     }
 
-    public static void handleFormPost(Request req, Response res) {
+    public static String handleFormPost(Request req, Response res) {
         //https://github.com/perwendel/spark/issues/26#issuecomment-95077039
         if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
             MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
@@ -40,7 +40,7 @@ public class FormResource {
                 if (file == null) {
                     res.status(400);
                     res.body("No file given");
-                    return;
+                    return res.body();
                 }
                 String filename = requestedFilename;
                 if (filename == null || filename.trim().length() == 0) {
@@ -50,33 +50,33 @@ public class FormResource {
                         res.body("Could not determine filename, requested filename: " + requestedFilename
                                 + " submitted filename " +
                                 " " + submittedFileName );
-                        return;
+                        return res.body();
                     }
                 }
                 if (userId == null || userId.trim().length() == 0) {
                     res.status(400);
                     res.body("No user id given.");
-                    return;
+                    return res.body();
                 }
                 if (accessToken == null || accessToken.trim().length() == 0) {
                     res.status(400);
                     res.body("No access token given.");
-                    return;
+                    return res.body();
                 }
                 if(userName == null || userId.trim().length() == 0) {
                     res.status(400);
                     res.body("No user name given.");
-                    return;
+                    return res.body();
                 }
                 if( contentLength <= 0 ) {
                     res.status(400);
                     res.body("Content length was invalid: " + contentLength);
-                    return;
+                    return res.body();
                 }
                 if( contentType == null || contentType.trim().length() == 0 ) {
                     res.status(400);
                     res.body("Content type was null or empty.");
-                    return;
+                    return res.body();
                 }
 
                 //TODO: check access token
@@ -85,12 +85,13 @@ public class FormResource {
             } catch (IOException | ServletException e) {
                 res.status(500);
                 res.body(e.getMessage());
-                return;
+                return res.body();
             }
         }
         String resourceLocation = "";
         res.status(201);
         //returning this will require an async form (or we have to do the html entity, like before).
         res.body( "/api/file/" + resourceLocation );
+        return res.body();
     }
 }
