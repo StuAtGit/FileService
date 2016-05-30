@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Created by stu on 4/24/16.
  */
-public class FormResource {
+public class ItemForm {
 
     private static String getFormString( Request req, String fieldName ) throws IOException, ServletException {
         Part part = req.raw().getPart(fieldName);

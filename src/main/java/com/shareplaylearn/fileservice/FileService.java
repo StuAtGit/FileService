@@ -1,6 +1,6 @@
 package com.shareplaylearn.fileservice;
 
-import com.shareplaylearn.fileservice.resources.FormResource;
+import com.shareplaylearn.fileservice.resources.ItemForm;
 
 import static spark.Spark.*;
 /**
@@ -16,6 +16,6 @@ public class FileService
             return "OK";
         });
 
-        post( "/api/file/form", (req,res) -> FormResource.handleFormPost(req, res) );
+        post( "/api/file/form", (req,res) -> ItemForm.handleFormPost(req, res) );
     }
 }
