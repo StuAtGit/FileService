@@ -1,5 +1,7 @@
 package com.shareplaylearn.fileservice.resources;
 
+import com.shareplaylearn.UserItemManager;
+import com.shareplaylearn.exceptions.InternalErrorException;
 import spark.Request;
 import spark.Response;
 import spark.utils.IOUtils;
@@ -79,10 +81,12 @@ public class FormResource {
                     return res.body();
                 }
 
+                UserItemManager userItemManager = new UserItemManager( userName, userId );
                 //TODO: check access token
                 byte[] fileBuffer = org.apache.commons.io.IOUtils.toByteArray(file);
+                userItemManager.addItem( filename, fileBuffer );
 
-            } catch (IOException | ServletException e) {
+            } catch (IOException | ServletException | InternalErrorException e) {
                 res.status(500);
                 res.body(e.getMessage());
                 return res.body();
