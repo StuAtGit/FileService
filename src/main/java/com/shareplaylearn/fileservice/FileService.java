@@ -2,11 +2,9 @@ package com.shareplaylearn.fileservice;
 
 import com.shareplaylearn.fileservice.resources.ItemForm;
 
-import static spark.Spark.*;
-/**
- * Hello world!
- *
- */
+import static spark.Spark.get;
+import static spark.Spark.post;
+
 public class FileService
 {
     public static void main( String[] args )
