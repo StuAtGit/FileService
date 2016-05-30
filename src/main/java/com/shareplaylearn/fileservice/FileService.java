@@ -26,11 +26,11 @@ public class FileService
 {
     public static void main( String[] args )
     {
-        get( "/api/status", (req,res) -> {
+        get( "/file_api/status", (req,res) -> {
             res.status(200);
             return "OK";
         });
 
-        post( "/api/file/form", (req,res) -> ItemForm.handleFormPost(req, res) );
+        post( "/file_api/file/form", (req,res) -> ItemForm.handleFormPost(req, res) );
     }
 }
