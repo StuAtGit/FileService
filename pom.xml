@@ -16,15 +16,15 @@
 
   <repositories>
     <repository>
-      <id>nexusRepo</id>
+      <id>artifactory</id>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
       <releases>
         <enabled>true</enabled>
       </releases>
-      <name>Shareplaylearn Nexus Repository</name>
-      <url>https://www.shareplaylearn.net/repo/repository/maven-snapshots/</url>
+      <name>Shareplaylearn Artifactory Repository</name>
+      <url>https://www.shareplaylearn.net/artifactory/libs-snapshot-local</url>
     </repository>
   </repositories>
 
