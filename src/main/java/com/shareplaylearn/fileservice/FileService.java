@@ -17,6 +17,7 @@
  */
 package com.shareplaylearn.fileservice;
 
+import com.shareplaylearn.TokenValidator;
 import com.shareplaylearn.fileservice.resources.ItemForm;
 
 import static spark.Spark.get;
@@ -24,8 +25,15 @@ import static spark.Spark.post;
 
 public class FileService
 {
+    public static TokenValidator tokenValidator;
+
     public static void main( String[] args )
     {
+        String validationResource = "https://www.shareplaylearn.com/auth_api/oauthToken_validation";
+        int validationCacheSize = 10000;
+        int validationCacheTime = 24 * 3600;
+        tokenValidator = new TokenValidator( validationResource, validationCacheSize, validationCacheTime );
+
         get( "/file_api/status", (req,res) -> {
             res.status(200);
             return "OK";

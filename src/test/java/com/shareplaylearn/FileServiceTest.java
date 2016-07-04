@@ -17,39 +17,46 @@
  */
 package com.shareplaylearn;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-/**
- * Unit test for simple FileService.
- */
+import com.shareplaylearn.exceptions.InternalErrorException;
+import com.shareplaylearn.fileservice.FileService;
+import com.shareplaylearn.fileservice.resources.ItemForm;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.modules.junit4.PowerMockRunner;
+import spark.Response;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.mockito.Mockito.mock;
+
+@RunWith(PowerMockRunner.class)
 public class FileServiceTest
-    extends TestCase
 {
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public FileServiceTest(String testName )
-    {
-        super( testName );
+    TokenValidator tokenValidator;
+    public FileServiceTest( ) {
+        tokenValidator = mock( TokenValidator.class );
     }
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( FileServiceTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
+    @Test
+    public void testUpload() throws IOException, InternalErrorException {
+        FileService.tokenValidator = tokenValidator;
+        Response response = mock(Response.class);
+        Path path = FileSystems.getDefault().getPath("testFile.txt");
+        InputStream testFile = Files.newInputStream(path);
+        String submittedName = "TestFile.txt";
+        String userId = "TestId";
+        String userName = "TestUser";
+        String accessToken = "TestToken";
+        String requestedFilename = "TestFile.txt.tmp";
+        int contentLength = (int)Files.size(path);
+        String contentType = "";
+        ItemForm.uploadFile( response, testFile, submittedName,
+                userId, userName, accessToken, requestedFilename, contentLength,
+                contentType );
     }
 }

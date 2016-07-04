@@ -17,8 +17,10 @@
  */
 package com.shareplaylearn.fileservice.resources;
 
+import com.shareplaylearn.TokenValidator;
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.InternalErrorException;
+import com.shareplaylearn.fileservice.FileService;
 import spark.Request;
 import spark.Response;
 import spark.utils.IOUtils;
@@ -28,6 +30,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.eclipse.jetty.http.HttpStatus.Code.*;
 
 /**
  * Created by stu on 4/24/16.
@@ -44,74 +48,94 @@ public class ItemForm {
         if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
             MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
             req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
-            try {
-                Part filePart = req.raw().getPart("file");
-                String submittedFileName = filePart.getSubmittedFileName();
-                InputStream file = filePart.getInputStream();
-                String userId = getFormString(req,"user_id");
-                String userName = getFormString(req,"user_name");
-                String accessToken = getFormString(req,"access_token");
-                String requestedFilename = getFormString(req,"filename");
-                int contentLength = req.contentLength();
-                String contentType = req.contentType();
+        }
+        try {
+            Part filePart = req.raw().getPart("file");
+            String submittedFilename = filePart.getSubmittedFileName();
+            InputStream file = filePart.getInputStream();
+            String userId = getFormString(req,"user_id");
+            String userName = getFormString(req,"user_name");
+            String accessToken = getFormString(req,"access_token");
+            String requestedFilename = getFormString(req,"filename");
+            int contentLength = req.contentLength();
+            String contentType = req.contentType();
 
-                if (file == null) {
-                    res.status(400);
-                    res.body("No file given");
-                    return res.body();
-                }
-                String filename = requestedFilename;
-                if (filename == null || filename.trim().length() == 0) {
-                    filename = submittedFileName;
-                    if (filename == null || filename.trim().length() == 0) {
-                        res.status(400);
-                        res.body("Could not determine filename, requested filename: " + requestedFilename
-                                + " submitted filename " +
-                                " " + submittedFileName );
-                        return res.body();
-                    }
-                }
-                if (userId == null || userId.trim().length() == 0) {
-                    res.status(400);
-                    res.body("No user id given.");
-                    return res.body();
-                }
-                if (accessToken == null || accessToken.trim().length() == 0) {
-                    res.status(400);
-                    res.body("No access token given.");
-                    return res.body();
-                }
-                if(userName == null || userId.trim().length() == 0) {
-                    res.status(400);
-                    res.body("No user name given.");
-                    return res.body();
-                }
-                if( contentLength <= 0 ) {
-                    res.status(400);
-                    res.body("Content length was invalid: " + contentLength);
-                    return res.body();
-                }
-                if( contentType == null || contentType.trim().length() == 0 ) {
-                    res.status(400);
-                    res.body("Content type was null or empty.");
-                    return res.body();
-                }
+            return uploadFile( res, file, submittedFilename, userId, userName, accessToken,
+                    requestedFilename, contentLength, contentType);
+        } catch (IOException | ServletException | InternalErrorException e) {
+            res.status(INTERNAL_SERVER_ERROR.getCode());
+            res.body(e.getMessage());
+            return res.body();
+        }
+    }
 
-                UserItemManager userItemManager = new UserItemManager( userName, userId );
-                //TODO: check access token
-                byte[] fileBuffer = org.apache.commons.io.IOUtils.toByteArray(file);
-                userItemManager.addItem( filename, fileBuffer );
+    public static String uploadFile (
+            Response res,
+            InputStream file, String submittedFilename,
+            String userId, String userName,
+            String accessToken, String requestedFilename,
+            int contentLength, String contentType
+    ) throws IOException, InternalErrorException {
 
-            } catch (IOException | ServletException | InternalErrorException e) {
-                res.status(500);
-                res.body(e.getMessage());
+        if (accessToken == null || accessToken.trim().length() == 0) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("No access token given.");
+            return res.body();
+        } else {
+            if(!FileService.tokenValidator.isValid(accessToken)) {
+                res.status(UNAUTHORIZED.getCode());
+                res.body(UNAUTHORIZED.toString());
                 return res.body();
             }
         }
+
+        if (file == null) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("No file given");
+            return res.body();
+        }
+        String filename = requestedFilename;
+        if (filename == null || filename.trim().length() == 0) {
+            filename = submittedFilename;
+            if (filename == null || filename.trim().length() == 0) {
+                res.status(BAD_REQUEST.getCode());
+                res.body("Could not determine filename, requested filename: " + requestedFilename
+                        + " submitted filename " +
+                        " " + submittedFilename );
+                return res.body();
+            }
+        }
+        if (userId == null || userId.trim().length() == 0) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("No user id given.");
+            return res.body();
+        }
+        if(userName == null || userId.trim().length() == 0) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("No user name given.");
+            return res.body();
+        }
+        if( contentLength <= 0 ) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("Content length was invalid: " + contentLength);
+            return res.body();
+        }
+
+        //Do we need this? What it is a good for?
+        if( contentType == null || contentType.trim().length() == 0 ) {
+            res.status(BAD_REQUEST.getCode());
+            res.body("Content type was null or empty.");
+            return res.body();
+        }
+
+        UserItemManager userItemManager = new UserItemManager( userName, userId );
+        byte[] fileBuffer = org.apache.commons.io.IOUtils.toByteArray(file);
+        userItemManager.addItem( filename, fileBuffer );
         String resourceLocation = "";
-        res.status(201);
+        res.status(CREATED.getCode());
         //returning this will require an async form (or we have to do the html entity, like before).
         res.body( "/api/file/" + resourceLocation );
         return res.body();
     }
+
 }
