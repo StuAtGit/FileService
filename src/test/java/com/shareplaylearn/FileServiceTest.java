@@ -32,7 +32,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 public class FileServiceTest
@@ -45,10 +47,11 @@ public class FileServiceTest
     @Test
     public void testUpload() throws IOException, InternalErrorException {
         FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
         Response response = mock(Response.class);
-        Path path = FileSystems.getDefault().getPath("testFile.txt");
+        Path path = FileSystems.getDefault().getPath("testUploads/TestUpload.txt");
         InputStream testFile = Files.newInputStream(path);
-        String submittedName = "TestFile.txt";
+        String submittedName = "TestUpload.txt";
         String userId = "TestId";
         String userName = "TestUser";
         String accessToken = "TestToken";
