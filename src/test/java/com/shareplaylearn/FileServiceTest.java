@@ -20,6 +20,7 @@ package com.shareplaylearn;
 
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.fileservice.FileService;
+import com.shareplaylearn.fileservice.resources.FileList;
 import com.shareplaylearn.fileservice.resources.ItemForm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.eclipse.jetty.http.HttpStatus.Code.CREATED;
+import static org.eclipse.jetty.http.HttpStatus.Code.OK;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -45,7 +47,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * PowerMock runner is mucking up a bunch of classes, even with this:
  * @PowerMockIgnore( {"javax.management.*",
  * "sun.security.*", "com.amazonaws.*", "javax.xml.*"})
- * I still have stuff failing left and right, so just use junit runner
  */
 public class FileServiceTest
 {
@@ -54,6 +55,10 @@ public class FileServiceTest
         tokenValidator = mock( TokenValidator.class );
     }
 
+    /**
+     * @throws IOException
+     * @throws InternalErrorException
+     */
     @Test
     public void testUpload() throws IOException, InternalErrorException {
         FileService.tokenValidator = tokenValidator;
@@ -77,5 +82,18 @@ public class FileServiceTest
         verify(uploadResponse).body((String) arg.capture());
         System.out.println(arg.getValue().toString());
 
+    }
+
+    @Test
+    public void testGetFileList() throws IOException {
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        Response fileListResponse = mock(Response.class);
+        ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
+        String response = FileList.getFileList("TestId", "TestUser", "TestToken", fileListResponse);
+        verify(fileListResponse).status(OK.getCode());
+        //TODO: verify filelists contents.
+        //verify(fileListResponse).body();
+        System.out.println(response);
     }
 }

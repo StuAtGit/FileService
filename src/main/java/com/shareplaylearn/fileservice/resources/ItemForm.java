@@ -19,8 +19,8 @@ package com.shareplaylearn.fileservice.resources;
 
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.InternalErrorException;
+import com.shareplaylearn.exceptions.QuotaExceededException;
 import com.shareplaylearn.fileservice.FileService;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -135,27 +135,14 @@ public class ItemForm {
 
         UserItemManager userItemManager = new UserItemManager( userName, userId );
         byte[] fileBuffer = org.apache.commons.io.IOUtils.toByteArray(file);
-        javax.ws.rs.core.Response response = userItemManager.addItem( filename, fileBuffer );
-
-        if( response.getStatusInfo().getStatusCode() == CREATED.getCode() ) {
-            String resourceLocation = "";
-            if( response.getEntity() != null ) {
-                resourceLocation += response.getEntity().toString();
-            }
+        try {
+            userItemManager.addItem( filename, fileBuffer );
             res.status(CREATED.getCode());
-            //returning this will require an async form (or we have to do the html entity, like before).
-            String resourcePath = "/api/file/" + resourceLocation;
-            res.body(resourcePath);
-            log.debug("File resource created at: " + resourcePath);
+            res.body(CREATED.toString());
             return res.body();
-        } else {
-            String message = "Upload failed: " + response.getStatus() + "/" + response.getStatusInfo().getReasonPhrase();
-            if( response.getEntity() != null ) {
-                message += response.getEntity().toString();
-            }
-            log.warn(message);
-            res.status(response.getStatus());
-            res.body(message);
+        } catch (QuotaExceededException e) {
+            res.status( INSUFFICIENT_STORAGE.getCode() );
+            res.body( INSUFFICIENT_STORAGE.toString() );
             return res.body();
         }
     }

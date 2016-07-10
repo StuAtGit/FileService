@@ -18,7 +18,9 @@
 package com.shareplaylearn.fileservice;
 
 import com.shareplaylearn.TokenValidator;
+import com.shareplaylearn.fileservice.resources.FileList;
 import com.shareplaylearn.fileservice.resources.ItemForm;
+import spark.route.RouteOverview;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -26,6 +28,8 @@ import static spark.Spark.post;
 public class FileService
 {
     public static TokenValidator tokenValidator;
+    //yes, the http Authorization header is usually used for authentication, as it is here
+    public static final String AUTHENTICATION_HEADER = "Authorization";
 
     public static void main( String[] args )
     {
@@ -34,11 +38,14 @@ public class FileService
         int validationCacheTime = 24 * 3600;
         tokenValidator = new TokenValidator( validationResource, validationCacheSize, validationCacheTime );
 
+        RouteOverview.enableRouteOverview("/file_api");
+
         get( "/file_api/status", (req,res) -> {
             res.status(200);
             return "OK";
         });
 
         post( "/file_api/file/form", (req,res) -> ItemForm.handleFormPost(req, res) );
+        post( "/file_api/:userName/:userId/filelist", (req,res) -> FileList.getFileList(req,res) );
     }
 }
