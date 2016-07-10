@@ -17,10 +17,12 @@
  */
 package com.shareplaylearn.fileservice.resources;
 
-import com.shareplaylearn.TokenValidator;
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.fileservice.FileService;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.utils.IOUtils;
@@ -37,6 +39,8 @@ import static org.eclipse.jetty.http.HttpStatus.Code.*;
  * Created by stu on 4/24/16.
  */
 public class ItemForm {
+
+    protected static Logger log = LoggerFactory.getLogger(ItemForm.class);
 
     private static String getFormString( Request req, String fieldName ) throws IOException, ServletException {
         Part part = req.raw().getPart(fieldName);
@@ -122,6 +126,7 @@ public class ItemForm {
         }
 
         //Do we need this? What it is a good for?
+        //I think we may have tried to use this with the S3 API ?
         if( contentType == null || contentType.trim().length() == 0 ) {
             res.status(BAD_REQUEST.getCode());
             res.body("Content type was null or empty.");
@@ -130,12 +135,29 @@ public class ItemForm {
 
         UserItemManager userItemManager = new UserItemManager( userName, userId );
         byte[] fileBuffer = org.apache.commons.io.IOUtils.toByteArray(file);
-        userItemManager.addItem( filename, fileBuffer );
-        String resourceLocation = "";
-        res.status(CREATED.getCode());
-        //returning this will require an async form (or we have to do the html entity, like before).
-        res.body( "/api/file/" + resourceLocation );
-        return res.body();
+        javax.ws.rs.core.Response response = userItemManager.addItem( filename, fileBuffer );
+
+        if( response.getStatusInfo().getStatusCode() == CREATED.getCode() ) {
+            String resourceLocation = "";
+            if( response.getEntity() != null ) {
+                resourceLocation += response.getEntity().toString();
+            }
+            res.status(CREATED.getCode());
+            //returning this will require an async form (or we have to do the html entity, like before).
+            String resourcePath = "/api/file/" + resourceLocation;
+            res.body(resourcePath);
+            log.debug("File resource created at: " + resourcePath);
+            return res.body();
+        } else {
+            String message = "Upload failed: " + response.getStatus() + "/" + response.getStatusInfo().getReasonPhrase();
+            if( response.getEntity() != null ) {
+                message += response.getEntity().toString();
+            }
+            log.warn(message);
+            res.status(response.getStatus());
+            res.body(message);
+            return res.body();
+        }
     }
 
 }
