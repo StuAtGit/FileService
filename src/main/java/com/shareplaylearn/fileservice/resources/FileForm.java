@@ -1,7 +1,7 @@
 /**
  * Copyright 2016 Stuart Smith
  *
- * This program is free software: you can redistribute it and/or modify
+ * This files is part of a program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * any later version.
@@ -40,9 +40,9 @@ import static org.eclipse.jetty.http.HttpStatus.Code.*;
 /**
  * Created by stu on 4/24/16.
  */
-public class ItemForm {
+public class FileForm {
 
-    protected static Logger log = LoggerFactory.getLogger(ItemForm.class);
+    protected static Logger log = LoggerFactory.getLogger(FileForm.class);
 
     private static String getFormString( Request req, String fieldName ) throws IOException, ServletException {
         Part part = req.raw().getPart(fieldName);

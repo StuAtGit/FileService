@@ -21,13 +21,9 @@ package com.shareplaylearn;
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.fileservice.FileService;
 import com.shareplaylearn.fileservice.resources.FileList;
-import com.shareplaylearn.fileservice.resources.ItemForm;
+import com.shareplaylearn.fileservice.resources.FileForm;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.internal.runners.JUnit44RunnerImpl;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 import spark.Response;
 
 import java.io.IOException;
@@ -77,7 +73,7 @@ public class FileServiceTest
         String contentType = "application/text";
 
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
-        System.out.println( ItemForm.uploadFile( uploadResponse, testFile, submittedName,
+        System.out.println( FileForm.uploadFile( uploadResponse, testFile, submittedName,
                 userId, userName, accessToken, requestedFilename, contentLength,
                 contentType ) );
         verify(uploadResponse).status(CREATED.getCode());

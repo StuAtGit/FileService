@@ -18,8 +18,9 @@
 package com.shareplaylearn.fileservice;
 
 import com.shareplaylearn.TokenValidator;
+import com.shareplaylearn.fileservice.resources.File;
 import com.shareplaylearn.fileservice.resources.FileList;
-import com.shareplaylearn.fileservice.resources.ItemForm;
+import com.shareplaylearn.fileservice.resources.FileForm;
 import spark.route.RouteOverview;
 
 import static spark.Spark.get;
@@ -45,7 +46,12 @@ public class FileService
             return "OK";
         });
 
-        post( "/file_api/file/form", (req,res) -> ItemForm.handleFormPost(req, res) );
-        post( "/file_api/:userName/:userId/filelist", (req,res) -> FileList.getFileList(req,res) );
+        //not entirely happy with a resource named "form", but best I can think of for now
+        //there will probably be a really obvious name that occurs to me, once this is
+        //embedded in the UI everywhere :O
+        post( "/file_api/file/form", (req,res) -> FileForm.handleFormPost(req, res) );
+        get( "/file_api/:userName/:userId/filelist", (req,res) -> FileList.getFileList(req,res) );
+        get( "/file_api/:userName/:userId/:fileType/:presentationType/:filename",
+                (req,res) -> File.getFile(req,res) );
     }
 }
