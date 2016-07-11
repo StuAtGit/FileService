@@ -51,6 +51,12 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class FileServiceTest
 {
     TokenValidator tokenValidator;
+    String submittedName = "TestUpload.txt.tmp";
+    String userId = "TestId";
+    String userName = "TestUser";
+    String accessToken = "TestToken";
+    String requestedFilename = "TestFile.txt";
+
     public FileServiceTest( ) {
         tokenValidator = mock( TokenValidator.class );
     }
@@ -66,11 +72,7 @@ public class FileServiceTest
         Response uploadResponse = mock(Response.class);
         Path path = FileSystems.getDefault().getPath("testUploads/TestUpload.txt");
         InputStream testFile = Files.newInputStream(path);
-        String submittedName = "TestUpload.txt";
-        String userId = "TestId";
-        String userName = "TestUser";
-        String accessToken = "TestToken";
-        String requestedFilename = "TestFile.txt.tmp";
+
         int contentLength = (int)Files.size(path);
         String contentType = "application/text";
 
@@ -90,10 +92,12 @@ public class FileServiceTest
         when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
         Response fileListResponse = mock(Response.class);
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
-        String response = FileList.getFileList("TestId", "TestUser", "TestToken", fileListResponse);
+        //response will be a null, because it's a method on a mock
+        String response = FileList.getFileList(userName, userId, accessToken, fileListResponse);
         verify(fileListResponse).status(OK.getCode());
         //TODO: verify filelists contents.
         //verify(fileListResponse).body();
-        System.out.println(response);
+        verify(fileListResponse).body((String) arg.capture());
+        System.out.println(arg.getValue());
     }
 }

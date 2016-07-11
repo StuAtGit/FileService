@@ -17,7 +17,9 @@
  */
 package com.shareplaylearn.fileservice.resources;
 
+import com.amazonaws.AmazonClientException;
 import com.shareplaylearn.UserItemManager;
+import com.shareplaylearn.exceptions.Exceptions;
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.exceptions.QuotaExceededException;
 import com.shareplaylearn.fileservice.FileService;
@@ -142,7 +144,11 @@ public class ItemForm {
             return res.body();
         } catch (QuotaExceededException e) {
             res.status( INSUFFICIENT_STORAGE.getCode() );
-            res.body( INSUFFICIENT_STORAGE.toString() );
+            res.body( Exceptions.asString(e) );
+            return res.body();
+        } catch (AmazonClientException e) {
+            res.status(INTERNAL_SERVER_ERROR.getCode());
+            res.body(Exceptions.asString(e));
             return res.body();
         }
     }

@@ -1,8 +1,11 @@
 package com.shareplaylearn.fileservice.resources;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.shareplaylearn.UserItemManager;
+import com.shareplaylearn.exceptions.Exceptions;
 import com.shareplaylearn.fileservice.FileService;
 import com.shareplaylearn.models.UserItem;
 import spark.Request;
@@ -11,6 +14,7 @@ import spark.Response;
 import java.io.IOException;
 import java.util.List;
 
+import static org.eclipse.jetty.http.HttpStatus.Code.INTERNAL_SERVER_ERROR;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
 import static org.eclipse.jetty.http.HttpStatus.Code.UNAUTHORIZED;
 
@@ -53,7 +57,15 @@ public class FileList {
         res.status(OK.getCode());
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         UserItemManager userItemManager = new UserItemManager( userName, userId );
-        res.body( gson.toJson(userItemManager.getItemList()) );
+        List<UserItem> fileList;
+        try {
+            fileList = userItemManager.getItemList();
+        } catch ( AmazonClientException e ) {
+            res.status(INTERNAL_SERVER_ERROR.getCode());
+            res.body(Exceptions.asString(e));
+            return res.body();
+        }
+        res.body( gson.toJson(fileList) );
         return res.body();
     }
 }
