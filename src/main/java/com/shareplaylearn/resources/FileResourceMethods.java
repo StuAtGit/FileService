@@ -64,6 +64,7 @@ public class FileResourceMethods {
             return getFile(userName, userId, accessToken, fileType, presentationType,
                     filename, encoding, res);
         } catch (IOException e) {
+            log.error(Exceptions.asString(e));
             res.status(INTERNAL_SERVER_ERROR.getCode());
             res.body(Exceptions.asString(e));
             return res.body();

@@ -24,6 +24,8 @@ import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.Exceptions;
 import com.shareplaylearn.FileService;
 import com.shareplaylearn.models.UserItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
@@ -39,6 +41,8 @@ import static org.eclipse.jetty.http.HttpStatus.Code.UNAUTHORIZED;
  * A per-user list of files they have uploaded.
  */
 public class FileListResource {
+
+    private static final Logger log = LoggerFactory.getLogger(FileListResource.class);
     public static String getFileList(Request req, Response res) throws IOException {
         String userName = req.params("userName");
         String userId = req.params("userId");
@@ -77,6 +81,7 @@ public class FileListResource {
         try {
             fileList = userItemManager.getItemList();
         } catch ( AmazonClientException e ) {
+            log.error(Exceptions.asString(e));
             res.status(INTERNAL_SERVER_ERROR.getCode());
             res.body(Exceptions.asString(e));
             return res.body();

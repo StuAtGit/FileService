@@ -69,6 +69,7 @@ public class FileFormResource {
             return uploadFile( res, file, submittedFilename, userId, userName, accessToken,
                     requestedFilename, contentLength, contentType);
         } catch (IOException | ServletException | InternalErrorException e) {
+            log.error(Exceptions.asString(e));
             res.status(INTERNAL_SERVER_ERROR.getCode());
             res.body(e.getMessage());
             return res.body();
