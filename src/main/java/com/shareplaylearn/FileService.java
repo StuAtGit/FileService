@@ -51,8 +51,8 @@ public class FileService
         //there will probably be a really obvious name that occurs to me, once this is
         //embedded in the UI everywhere :O
         post( "/file_api/file/form", (req,res) -> FileFormResource.handleFormPost(req, res) );
-        get( "/file_api/:userName/:userId/filelist", (req,res) -> FileListResource.getFileList(req,res) );
-        get( "/file_api/:userName/:userId/:fileType/:presentationType/:filename",
+        get( "/file_api/file/:userName/:userId/filelist", (req,res) -> FileListResource.getFileList(req,res) );
+        get( "/file_api/file/:userName/:userId/:fileType/:presentationType/:filename",
                 (req,res) -> FileResourceMethods.getFile(req,res) );
     }
 }
