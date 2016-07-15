@@ -15,15 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package com.shareplaylearn.fileservice;
+package com.shareplaylearn;
 
-import com.shareplaylearn.TokenValidator;
-import com.shareplaylearn.fileservice.resources.FileResourceMethods;
-import com.shareplaylearn.fileservice.resources.FileListResource;
-import com.shareplaylearn.fileservice.resources.FileFormResource;
+import com.shareplaylearn.resources.FileListResource;
+import com.shareplaylearn.resources.FileResourceMethods;
 import spark.route.RouteOverview;
-
 import static spark.Spark.*;
+import com.shareplaylearn.resources.FileFormResource;
 
 public class FileService
 {

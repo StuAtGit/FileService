@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package com.shareplaylearn.fileservice.resources;
+package com.shareplaylearn.resources;
 
 /**
  * Created by stu on 5/30/16.
  */
-public class Status {
+public class FileServiceStatus {
 }

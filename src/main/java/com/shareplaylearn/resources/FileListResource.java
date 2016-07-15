@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package com.shareplaylearn.fileservice.resources;
+package com.shareplaylearn.resources;
 
 import com.amazonaws.AmazonClientException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.Exceptions;
-import com.shareplaylearn.fileservice.FileService;
+import com.shareplaylearn.FileService;
 import com.shareplaylearn.models.UserItem;
 import spark.Request;
 import spark.Response;

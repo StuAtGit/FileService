@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package com.shareplaylearn.fileservice.resources;
+package com.shareplaylearn.resources;
 
 import com.amazonaws.AmazonClientException;
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.Exceptions;
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.exceptions.QuotaExceededException;
-import com.shareplaylearn.fileservice.FileService;
+import com.shareplaylearn.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
