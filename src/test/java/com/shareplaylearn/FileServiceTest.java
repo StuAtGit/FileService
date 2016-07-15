@@ -44,9 +44,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.jetty.http.HttpStatus.Code.CREATED;
-import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
-import static org.eclipse.jetty.http.HttpStatus.Code.OK;
+import static org.eclipse.jetty.http.HttpStatus.Code.*;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -97,9 +95,9 @@ public class FileServiceTest
         String contentType = "application/text";
 
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
-        System.out.println( FileFormResource.uploadFile( uploadResponse, testFile, submittedName,
+        FileFormResource.uploadFile( uploadResponse, testFile, submittedName,
                 userId, userName, accessToken, requestedFilename, contentLength,
-                contentType ) );
+                contentType );
         verify(uploadResponse).status(CREATED.getCode());
         verify(uploadResponse).body((String) arg.capture());
         System.out.println(arg.getValue().toString());
@@ -113,11 +111,9 @@ public class FileServiceTest
         when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
         Response fileListResponse = mock(Response.class);
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
-        //response will be a null, because it's a method on a mock
-        String response = FileListResource.getFileList(userName, userId, accessToken, fileListResponse);
+        //returned response will be a null, because it's a method on a mock
+        FileListResource.getFileList(userName, userId, accessToken, fileListResponse);
         verify(fileListResponse).status(OK.getCode());
-        //TODO: verify filelists contents.
-        //verify(fileListResponse).body();
         verify(fileListResponse).body((String) arg.capture());
         Gson gson = new Gson();
         Type type = new TypeToken< List<UserItem> >(){}.getType();
@@ -168,5 +164,58 @@ public class FileServiceTest
                 nonExistentFilename, null, fileResponse);
         verify(out,never()).write((byte[]) arg.capture());
         verify(fileResponse).status(NOT_FOUND.getCode());
+    }
+
+    @Test
+    public void testGetFileDenied() throws IOException {
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        Response fileResponse = mock(Response.class);
+        HttpServletResponse mockRaw = mock(HttpServletResponse.class);
+        ServletOutputStream out = mock(ServletOutputStream.class);
+        when(mockRaw.getOutputStream()).thenReturn(out);
+        when(fileResponse.raw()).thenReturn(mockRaw);
+
+        ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
+        String response = FileResourceMethods.getFile(userName, userId, accessToken, "unknown",
+                ItemSchema.PresentationType.ORIGINAL_PRESENTATION_TYPE.toString(),
+                requestedFilename, null, fileResponse);
+
+        verify(fileResponse).status(UNAUTHORIZED.getCode());
+        verify(fileResponse).body(UNAUTHORIZED.toString());
+    }
+
+    @Test
+    public void testPostFileDenied() throws IOException, InternalErrorException {
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        Response uploadResponse = mock(Response.class);
+        Path path = FileSystems.getDefault().getPath("testUploads/TestUpload.txt");
+        InputStream testFile = Files.newInputStream(path);
+
+        int contentLength = (int)Files.size(path);
+        String contentType = "application/text";
+
+        ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
+        FileFormResource.uploadFile( uploadResponse, testFile, submittedName,
+                userId, userName, accessToken, requestedFilename, contentLength,
+                contentType );
+        verify(uploadResponse).status(UNAUTHORIZED.getCode());
+        verify(uploadResponse).body(UNAUTHORIZED.toString());
+    }
+
+    @Test
+    public void testGetFilelistDenied() throws IOException {
+        /**
+         * TODO: factor out these tests a little...
+         */
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        Response fileListResponse = mock(Response.class);
+        ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
+        //returned response will be a null, because it's a method on a mock
+        FileListResource.getFileList(userName, userId, accessToken, fileListResponse);
+        verify(fileListResponse).status(UNAUTHORIZED.getCode());
+        verify(fileListResponse).body(UNAUTHORIZED.toString());
     }
 }

@@ -23,8 +23,7 @@ import com.shareplaylearn.fileservice.resources.FileListResource;
 import com.shareplaylearn.fileservice.resources.FileFormResource;
 import spark.route.RouteOverview;
 
-import static spark.Spark.get;
-import static spark.Spark.post;
+import static spark.Spark.*;
 
 public class FileService
 {
@@ -39,6 +38,10 @@ public class FileService
         int validationCacheTime = 24 * 3600;
         tokenValidator = new TokenValidator( validationResource, validationCacheSize, validationCacheTime );
 
+        int listenPort = 4173;
+        port(listenPort);
+        //until we configure SSL, this should be hard-coded to localhost
+        ipAddress("127.0.0.1");
         RouteOverview.enableRouteOverview("/file_api");
 
         get( "/file_api/status", (req,res) -> {
