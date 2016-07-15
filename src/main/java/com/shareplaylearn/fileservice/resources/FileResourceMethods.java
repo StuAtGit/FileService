@@ -17,6 +17,7 @@
  */
 package com.shareplaylearn.fileservice.resources;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.shareplaylearn.UserItemManager;
 import com.shareplaylearn.exceptions.Exceptions;
 import com.shareplaylearn.exceptions.UnsupportedEncodingException;
@@ -28,6 +29,8 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.eclipse.jetty.http.HttpStatus.Code.*;
 
@@ -35,9 +38,9 @@ import static org.eclipse.jetty.http.HttpStatus.Code.*;
  * Created by stu on 7/10/16.
  */
 @SuppressWarnings("WeakerAccess")
-public class File {
+public class FileResourceMethods {
 
-    public static Logger log = LoggerFactory.getLogger(File.class);
+    public static Logger log = LoggerFactory.getLogger(FileResourceMethods.class);
 
     public static String getFile(Request req, Response res ) {
         String userName = req.params("userName");
@@ -82,7 +85,7 @@ public class File {
         UserItemManager userItemManager = new UserItemManager( userName, userId );
         ItemSchema.PresentationType presentationType;
         try {
-            presentationType = ItemSchema.PresentationType.valueOf(presentationTypeArg);
+            presentationType = ItemSchema.PresentationType.fromString(presentationTypeArg);
         } catch (IllegalArgumentException e ) {
             res.status(BAD_REQUEST.getCode());
             res.body("Invalid presentation type: " + presentationTypeArg);
@@ -100,6 +103,18 @@ public class File {
             res.status(BAD_REQUEST.getCode());
             res.body("Unsupported encoding: " + encoding);
             log.info( Exceptions.asString(e) );
+            return res.body();
+        } catch(AmazonS3Exception e) {
+
+            //this exception is what we get back for not found, forbidden, etc.
+            log.info( e.getMessage() );
+            log.info( e.getErrorMessage() );
+            Map<String,String> additionalDetails = e.getAdditionalDetails();
+            log.info( Arrays.toString(additionalDetails.values().toArray()));
+            log.info( e.getStatusCode() + "" );
+
+            res.body( e.getErrorMessage() );
+            res.status( e.getStatusCode() );
             return res.body();
         }
     }

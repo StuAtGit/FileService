@@ -40,9 +40,9 @@ import static org.eclipse.jetty.http.HttpStatus.Code.*;
 /**
  * Created by stu on 4/24/16.
  */
-public class FileForm {
+public class FileFormResource {
 
-    protected static Logger log = LoggerFactory.getLogger(FileForm.class);
+    protected static Logger log = LoggerFactory.getLogger(FileFormResource.class);
 
     private static String getFormString( Request req, String fieldName ) throws IOException, ServletException {
         Part part = req.raw().getPart(fieldName);

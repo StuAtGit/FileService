@@ -18,24 +18,39 @@
 package com.shareplaylearn;
 
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.shareplaylearn.exceptions.InternalErrorException;
 import com.shareplaylearn.fileservice.FileService;
-import com.shareplaylearn.fileservice.resources.FileList;
-import com.shareplaylearn.fileservice.resources.FileForm;
+import com.shareplaylearn.fileservice.resources.FileResourceMethods;
+import com.shareplaylearn.fileservice.resources.FileListResource;
+import com.shareplaylearn.fileservice.resources.FileFormResource;
+import com.shareplaylearn.models.ItemSchema;
+import com.shareplaylearn.models.UserItem;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import spark.Response;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.eclipse.jetty.http.HttpStatus.Code.CREATED;
+import static org.eclipse.jetty.http.HttpStatus.Code.NOT_FOUND;
 import static org.eclipse.jetty.http.HttpStatus.Code.OK;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -46,15 +61,24 @@ import static org.powermock.api.mockito.PowerMockito.when;
  */
 public class FileServiceTest
 {
-    TokenValidator tokenValidator;
-    String submittedName = "TestUpload.txt.tmp";
-    String userId = "TestId";
-    String userName = "TestUser";
-    String accessToken = "TestToken";
-    String requestedFilename = "TestFile.txt";
+    private TokenValidator tokenValidator;
+    private static String submittedName = "TestUpload.txt.tmp";
+    private static String userId = "TestId";
+    private static String userName = "TestUser";
+    private static String accessToken = "TestToken";
+    private static String requestedFilename = "TestUpload.txt";
+    private static String testUploadDir = "testUploads";
+    private static String nonExistentFilename = "THisFileDoesNotExist123123.txt";
 
-    public FileServiceTest( ) {
+    private static byte[] testFileBytes;
+    private static String testFileContents;
+
+    public FileServiceTest( ) throws IOException {
         tokenValidator = mock( TokenValidator.class );
+        testFileBytes = Files.readAllBytes( FileSystems.getDefault().getPath(
+                testUploadDir + File.separator +
+                requestedFilename) );
+        testFileContents = new String( testFileBytes, StandardCharsets.UTF_8);
     }
 
     /**
@@ -73,7 +97,7 @@ public class FileServiceTest
         String contentType = "application/text";
 
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
-        System.out.println( FileForm.uploadFile( uploadResponse, testFile, submittedName,
+        System.out.println( FileFormResource.uploadFile( uploadResponse, testFile, submittedName,
                 userId, userName, accessToken, requestedFilename, contentLength,
                 contentType ) );
         verify(uploadResponse).status(CREATED.getCode());
@@ -83,17 +107,66 @@ public class FileServiceTest
     }
 
     @Test
-    public void testGetFileList() throws IOException {
+    public void testGetFileList() throws IOException, InternalErrorException {
+        testUpload();
         FileService.tokenValidator = tokenValidator;
         when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
         Response fileListResponse = mock(Response.class);
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
         //response will be a null, because it's a method on a mock
-        String response = FileList.getFileList(userName, userId, accessToken, fileListResponse);
+        String response = FileListResource.getFileList(userName, userId, accessToken, fileListResponse);
         verify(fileListResponse).status(OK.getCode());
         //TODO: verify filelists contents.
         //verify(fileListResponse).body();
         verify(fileListResponse).body((String) arg.capture());
+        Gson gson = new Gson();
+        Type type = new TypeToken< List<UserItem> >(){}.getType();
+        List<UserItem> userItemList = gson.fromJson((String) arg.getValue(),type);
+        boolean found = false;
+        for( UserItem item : userItemList ) {
+            if( item.getPreferredLocation().itemName.equals(requestedFilename) ) {
+                found = true;
+            }
+        }
         System.out.println(arg.getValue());
+        assertTrue(found);
+    }
+
+    @Test
+    public void testGetFile() throws IOException, InternalErrorException {
+        testUpload();
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        Response fileResponse = mock(Response.class);
+        HttpServletResponse mockRaw = mock(HttpServletResponse.class);
+        ServletOutputStream out = mock(ServletOutputStream.class);
+        when(mockRaw.getOutputStream()).thenReturn(out);
+        when(fileResponse.raw()).thenReturn(mockRaw);
+
+        ArgumentCaptor arg = ArgumentCaptor.forClass(byte[].class);
+        String response = FileResourceMethods.getFile(userName, userId, accessToken, "unknown",
+                ItemSchema.PresentationType.ORIGINAL_PRESENTATION_TYPE.toString(),
+                requestedFilename, null, fileResponse);
+        verify(out).write((byte[]) arg.capture());
+        verify(mockRaw).setContentType("application/octect-stream");
+        Arrays.equals( testFileBytes, (byte[]) arg.getValue());
+    }
+
+    @Test
+    public void testGetNonExistentFile() throws IOException, InternalErrorException {
+        FileService.tokenValidator = tokenValidator;
+        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        Response fileResponse = mock(Response.class);
+        HttpServletResponse mockRaw = mock(HttpServletResponse.class);
+        ServletOutputStream out = mock(ServletOutputStream.class);
+        when(mockRaw.getOutputStream()).thenReturn(out);
+        when(fileResponse.raw()).thenReturn(mockRaw);
+
+        ArgumentCaptor arg = ArgumentCaptor.forClass(byte[].class);
+        String response = FileResourceMethods.getFile(userName, userId, accessToken, "unknown",
+                ItemSchema.PresentationType.ORIGINAL_PRESENTATION_TYPE.toString(),
+                nonExistentFilename, null, fileResponse);
+        verify(out,never()).write((byte[]) arg.capture());
+        verify(fileResponse).status(NOT_FOUND.getCode());
     }
 }

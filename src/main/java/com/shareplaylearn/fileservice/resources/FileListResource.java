@@ -38,7 +38,7 @@ import static org.eclipse.jetty.http.HttpStatus.Code.UNAUTHORIZED;
  * Created by stu on 7/10/16.
  * A per-user list of files they have uploaded.
  */
-public class FileList {
+public class FileListResource {
     public static String getFileList(Request req, Response res) throws IOException {
         String userName = req.params("userName");
         String userId = req.params("userId");
