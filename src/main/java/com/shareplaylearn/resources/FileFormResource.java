@@ -45,17 +45,26 @@ public class FileFormResource {
     protected static Logger log = LoggerFactory.getLogger(FileFormResource.class);
 
     private static String getFormString( Request req, String fieldName ) throws IOException, ServletException {
+        if( fieldName == null ) {
+            log.warn("Tried to retrieve a form string that was null.");
+            return null;
+        }
         Part part = req.raw().getPart(fieldName);
+        if( part == null ) {
+            log.warn("Part for field name: " + fieldName + " was null.");
+            return null;
+        }
         return IOUtils.toString( part.getInputStream() );
     }
 
     public static String handleFormPost(Request req, Response res) {
-        //https://github.com/perwendel/spark/issues/26#issuecomment-95077039
-        if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
-            MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
-            req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
-        }
         try {
+            //https://github.com/perwendel/spark/issues/26#issuecomment-95077039
+            if (req.raw().getAttribute("org.eclipse.jetty.multipartConfig") == null) {
+                MultipartConfigElement multipartConfigElement = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
+                req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
+            }
+
             Part filePart = req.raw().getPart("file");
             String submittedFilename = filePart.getSubmittedFileName();
             InputStream file = filePart.getInputStream();
@@ -72,6 +81,11 @@ public class FileFormResource {
             log.error(Exceptions.asString(e));
             res.status(INTERNAL_SERVER_ERROR.getCode());
             res.body(e.getMessage());
+            return res.body();
+        } catch ( Throwable t ) {
+            log.error(Exceptions.asString(t));
+            res.status(INTERNAL_SERVER_ERROR.getCode());
+            res.body(t.getMessage());
             return res.body();
         }
     }
