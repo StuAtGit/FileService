@@ -51,6 +51,9 @@ public class FileFormResource {
         }
         Part part = req.raw().getPart(fieldName);
         if( part == null ) {
+            //TODO: figure out what the impact of this is:
+            //WARN  c.s.r.FileFormResource: Part for field name: filename was null
+            //Looks like this is fine, as long as there is a submitted filename
             log.warn("Part for field name: " + fieldName + " was null.");
             return null;
         }

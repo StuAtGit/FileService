@@ -18,7 +18,7 @@
 package com.shareplaylearn;
 
 import com.shareplaylearn.resources.FileListResource;
-import com.shareplaylearn.resources.FileResourceMethods;
+import com.shareplaylearn.resources.FileResource;
 import spark.route.RouteOverview;
 import static spark.Spark.*;
 import com.shareplaylearn.resources.FileFormResource;
@@ -53,6 +53,6 @@ public class FileService
         post( "/file_api/file/form", (req,res) -> FileFormResource.handleFormPost(req, res) );
         get( "/file_api/file/:userName/:userId/filelist", (req,res) -> FileListResource.getFileList(req,res) );
         get( "/file_api/file/:userName/:userId/:fileType/:presentationType/:filename",
-                (req,res) -> FileResourceMethods.getFile(req,res) );
+                (req,res) -> FileResource.getFile(req,res) );
     }
 }

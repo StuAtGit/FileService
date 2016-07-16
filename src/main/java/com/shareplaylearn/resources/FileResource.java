@@ -29,6 +29,7 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -38,9 +39,9 @@ import static org.eclipse.jetty.http.HttpStatus.Code.*;
  * Created by stu on 7/10/16.
  */
 @SuppressWarnings("WeakerAccess")
-public class FileResourceMethods {
+public class FileResource {
 
-    public static Logger log = LoggerFactory.getLogger(FileResourceMethods.class);
+    public static Logger log = LoggerFactory.getLogger(FileResource.class);
 
     public static String getFile(Request req, Response res ) {
         String userName = req.params("userName");
@@ -97,8 +98,15 @@ public class FileResourceMethods {
             byte[] bytes = userItemManager.getItem( fileType, presentationType,
                     filename, encoding );
             res.status(OK.getCode());
-            res.raw().setContentType("application/octect-stream");
-            res.raw().getOutputStream().write(bytes);
+            if( encoding != null && encoding.equals(UserItemManager.AvailableEncodings.BASE64) ) {
+                log.debug("Writing " + filename + " to requester with encoding: " + encoding);
+                res.body( new String(bytes, StandardCharsets.UTF_8) );
+            } else {
+                log.debug("Writing " + filename + " to requester with encoding: " + encoding);
+                res.raw().setContentType("application/octect-stream");
+                res.raw().setContentLength(bytes.length);
+                res.raw().getOutputStream().write(bytes);
+            }
             return res.body();
         } catch (UnsupportedEncodingException e) {
             res.status(BAD_REQUEST.getCode());
