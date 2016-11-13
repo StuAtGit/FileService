@@ -79,7 +79,7 @@ public class FileResource {
                            String filename, String encoding,
                            Response res ) throws IOException {
 
-        if( !FileService.tokenValidator.isValid(accessToken) ) {
+        if( !FileService.tokenValidator.isValid(accessToken, userId) ) {
             res.status(UNAUTHORIZED.getCode());
             res.body(UNAUTHORIZED.toString());
             return res.body();

@@ -46,6 +46,7 @@ import java.util.List;
 import static org.eclipse.jetty.http.HttpStatus.Code.*;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -85,7 +86,7 @@ public class FileServiceTest
     @Test
     public void testUpload() throws IOException, InternalErrorException {
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        when( FileService.tokenValidator.isValid(eq(accessToken), eq(userId)) ).thenReturn(true);
         Response uploadResponse = mock(Response.class);
         Path path = FileSystems.getDefault().getPath("testUploads/TestUpload.txt");
         InputStream testFile = Files.newInputStream(path);
@@ -107,7 +108,7 @@ public class FileServiceTest
     public void testGetFileList() throws IOException, InternalErrorException {
         testUpload();
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(true);
         Response fileListResponse = mock(Response.class);
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
         //returned response will be a null, because it's a method on a mock
@@ -131,7 +132,7 @@ public class FileServiceTest
     public void testGetFile() throws IOException, InternalErrorException {
         testUpload();
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(true);
         Response fileResponse = mock(Response.class);
         HttpServletResponse mockRaw = mock(HttpServletResponse.class);
         ServletOutputStream out = mock(ServletOutputStream.class);
@@ -153,7 +154,7 @@ public class FileServiceTest
     @Test
     public void testGetNonExistentFile() throws IOException, InternalErrorException {
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(true);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(true);
         Response fileResponse = mock(Response.class);
         HttpServletResponse mockRaw = mock(HttpServletResponse.class);
         ServletOutputStream out = mock(ServletOutputStream.class);
@@ -171,7 +172,7 @@ public class FileServiceTest
     @Test
     public void testGetFileDenied() throws IOException {
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(false);
         Response fileResponse = mock(Response.class);
         HttpServletResponse mockRaw = mock(HttpServletResponse.class);
         ServletOutputStream out = mock(ServletOutputStream.class);
@@ -190,7 +191,7 @@ public class FileServiceTest
     @Test
     public void testPostFileDenied() throws IOException, InternalErrorException {
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(false);
         Response uploadResponse = mock(Response.class);
         Path path = FileSystems.getDefault().getPath("testUploads/TestUpload.txt");
         InputStream testFile = Files.newInputStream(path);
@@ -212,7 +213,7 @@ public class FileServiceTest
          * TODO: factor out these tests a little...
          */
         FileService.tokenValidator = tokenValidator;
-        when( FileService.tokenValidator.isValid(anyString()) ).thenReturn(false);
+        when( FileService.tokenValidator.isValid(accessToken, userId) ).thenReturn(false);
         Response fileListResponse = mock(Response.class);
         ArgumentCaptor arg = ArgumentCaptor.forClass(String.class);
         //returned response will be a null, because it's a method on a mock

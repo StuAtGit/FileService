@@ -69,7 +69,7 @@ public class FileListResource {
                                 String userId,
                                 String accessToken,
                                 Response res) throws IOException {
-        if( !FileService.tokenValidator.isValid(accessToken) ) {
+        if( !FileService.tokenValidator.isValid(accessToken, userId) ) {
             res.body(UNAUTHORIZED.toString());
             res.status(UNAUTHORIZED.getCode());
             return res.body();

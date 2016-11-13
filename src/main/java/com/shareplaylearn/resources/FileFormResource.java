@@ -106,7 +106,7 @@ public class FileFormResource {
             res.body("No access token given.");
             return res.body();
         } else {
-            if(!FileService.tokenValidator.isValid(accessToken)) {
+            if(!FileService.tokenValidator.isValid(accessToken, userId)) {
                 res.status(UNAUTHORIZED.getCode());
                 res.body(UNAUTHORIZED.toString());
                 return res.body();
